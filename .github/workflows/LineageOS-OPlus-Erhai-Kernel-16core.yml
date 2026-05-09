@@ -21,10 +21,10 @@ jobs:
     - name: Setup build kernel environment (CachyOS/Arch)
       run: |
         echo "BUILD_TIME=$(TZ=America/New_York date "+%y%m%d")" >> $GITHUB_ENV
-        # Update system packages and install build dependencies
-        sudo pacman -Syu --noconfirm \
+        # Update package database and install missing build dependencies
+        sudo pacman -Sy --needed --noconfirm \
           git base-devel ccache automake flex bison \
-          zlib ncurses bc dtc python make libelf pahole \
+          ncurses bc dtc python make libelf pahole \
           curl wget tar xz
         # Create workspace
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace

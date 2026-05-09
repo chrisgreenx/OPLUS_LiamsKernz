@@ -128,6 +128,9 @@ jobs:
         EX_CMD="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf OBJSIZE=llvm-size STRIP=llvm-strip"
         DEFCONFIG="gki_defconfig vendor/sun_perf.config vendor/oplus/sun_perf.config"
 
+        # Fix libbpf compilation error with newer clang
+        sed -i 's/next_path = strchr(s, '\'':'\'');/next_path = (char *)strchr(s, '\'':'\'');/g' tools/lib/bpf/libbpf.c
+
         make O=out $AR_CMD CC="ccache clang" CXX="ccache clang++" $EX_CMD $DEFCONFIG
 
         scripts/config --file out/.config -e LTO_CLANG -d LTO_NONE -e LTO_CLANG_THIN -d LTO_CLANG_FULL -e THINLTO

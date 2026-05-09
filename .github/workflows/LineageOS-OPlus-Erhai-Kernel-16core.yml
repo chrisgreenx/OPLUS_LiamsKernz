@@ -121,19 +121,16 @@ jobs:
 
         # ccache wrapper
         export CCACHE_EXEC=/usr/bin/ccache
-        export CC="ccache clang"
-        export CXX="ccache clang++"
 
         AR_CMD="ARCH=${ARCH} SUBARCH=${SUBARCH} HEADER_ARCH=${HEADER_ARCH}"
-        BA_CMD="CC=${CC} CXX=${CXX}"
         EX_CMD="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf OBJSIZE=llvm-size STRIP=llvm-strip LLVM=1 LLVM_IAS=1"
         DEFCONFIG="gki_defconfig vendor/sun_perf.config vendor/oplus/sun_perf.config"
 
-        make O=out $AR_CMD $BA_CMD $EX_CMD $DEFCONFIG
+        make O=out $AR_CMD CC="ccache clang" CXX="ccache clang++" $EX_CMD $DEFCONFIG
 
         scripts/config --file out/.config -e LTO_CLANG -d LTO_NONE -e LTO_CLANG_THIN -d LTO_CLANG_FULL -e THINLTO
 
-        make -j$(nproc --all) O=out $AR_CMD $BA_CMD $EX_CMD
+        make -j$(nproc --all) O=out $AR_CMD CC="ccache clang" CXX="ccache clang++" $EX_CMD
 
         echo "=== CCACHE STATS ==="
         ccache -s

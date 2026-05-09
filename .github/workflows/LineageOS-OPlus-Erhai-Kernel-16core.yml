@@ -24,7 +24,7 @@ jobs:
         # Update system packages and install build dependencies
         sudo pacman -Syu --noconfirm \
           git base-devel ccache automake flex bison \
-          zlib ncurses bc dtc python make libelf dwarves \
+          zlib ncurses bc dtc python make libelf pahole \
           curl wget tar xz
         # Create workspace
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace

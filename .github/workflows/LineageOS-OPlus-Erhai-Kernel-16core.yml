@@ -1,4 +1,4 @@
-name: Build LineageOS kernel for OnePlus Pad 3 / Pad 2 Pro with ccache (16-core)
+name: Build LineageOS kernel for OnePlus Pad 3 / Pad 2 Pro (CachyOS/Arch self-hosted)
 
 on:
   workflow_dispatch:
@@ -18,19 +18,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set swap to 16G
-      uses: pierotofy/set-swap-space@master
-      with:
-        swap-size-gb: 16
-
-    - name: Setup build kernel environment
+    - name: Setup build kernel environment (CachyOS/Arch)
       run: |
         echo "BUILD_TIME=$(TZ=America/New_York date "+%y%m%d")" >> $GITHUB_ENV
-        sudo apt-get update
-        sudo apt-get install -y git dwarves libelf-dev ccache automake flex bison \
-          build-essential zlib1g-dev libncurses5-dev libc6-dev-i386 bc \
-          device-tree-compiler python3 make
+        # Update system packages and install build dependencies
+        sudo pacman -Syu --noconfirm \
+          git base-devel ccache automake flex bison \
+          zlib ncurses bc dtc python make libelf dwarves \
+          curl wget tar xz
+        # Create workspace
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+        # Configure ccache
         ccache -M ${{ env.CCACHE_MAXSIZE }}
         ccache --set-config=compiler_check=content
         ccache --set-config=sloppiness=include_file_ctime,include_file_mtime,locale,pch_defines,time_macros
@@ -118,9 +116,9 @@ jobs:
         export SUBARCH=arm64
         export HEADER_ARCH=arm64
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$PATH
-        export KBUILD_BUILD_HOST=Github-Action-16core
+        export KBUILD_BUILD_HOST=CachyOS-SelfHosted
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
-        
+
         # ccache wrapper
         export CCACHE_EXEC=/usr/bin/ccache
         export CC="ccache clang"
@@ -130,13 +128,13 @@ jobs:
         BA_CMD="CC=${CC} CXX=${CXX}"
         EX_CMD="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf OBJSIZE=llvm-size STRIP=llvm-strip LLVM=1 LLVM_IAS=1"
         DEFCONFIG="gki_defconfig vendor/sun_perf.config vendor/oplus/sun_perf.config"
-        
+
         make O=out $AR_CMD $BA_CMD $EX_CMD $DEFCONFIG
-        
+
         scripts/config --file out/.config -e LTO_CLANG -d LTO_NONE -e LTO_CLANG_THIN -d LTO_CLANG_FULL -e THINLTO
-        
+
         make -j$(nproc --all) O=out $AR_CMD $BA_CMD $EX_CMD
-        
+
         echo "=== CCACHE STATS ==="
         ccache -s
 

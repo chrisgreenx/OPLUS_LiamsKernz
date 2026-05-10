@@ -25,7 +25,7 @@ jobs:
         sudo pacman -Sy --needed --noconfirm \
           git base-devel ccache automake flex bison \
           ncurses bc dtc python make libelf pahole \
-          curl wget tar xz
+          curl wget tar xz cpio
         # Create workspace
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
         # Configure ccache
@@ -96,18 +96,6 @@ jobs:
         echo "Applying kernel patch..."
         cd ..
         patch -p1 < 50_add_susfs_in_kernel.patch || true
-
-    - name: Apply Wild Kernels patches
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/sm8750/KernelSU-Next
-        echo "Cloning wildpatches..."
-        git clone https://github.com/Liam314839/wildpatches
-        echo "Applying Wild Kernels patches..."
-        for patch in wildpatches/*.patch; do
-          echo "Applying $patch"
-          patch -p1 < "$patch" || true
-        done
-        echo "Wild Kernels patches applied successfully"
 
     - name: Build kernel
       run: |

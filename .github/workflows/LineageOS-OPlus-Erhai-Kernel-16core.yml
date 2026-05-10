@@ -21,6 +21,8 @@ jobs:
     - name: Setup build kernel environment (CachyOS/Arch)
       run: |
         echo "BUILD_TIME=$(TZ=America/New_York date "+%y%m%d")" >> $GITHUB_ENV
+        # Create a clean workspace by deleting any left-over files from previous failed runs
+        rm -rf $GITHUB_WORKSPACE/kernel_workspace
         # Update package database and install missing build dependencies
         sudo pacman -Sy --needed --noconfirm \
           git base-devel ccache automake flex bison \

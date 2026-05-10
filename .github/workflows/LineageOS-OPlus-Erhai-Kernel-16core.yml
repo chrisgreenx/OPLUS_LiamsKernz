@@ -74,29 +74,24 @@ jobs:
         sed -i '$a CONFIG_KSU=y' $GITHUB_WORKSPACE/kernel_workspace/sm8750/arch/arm64/configs/vendor/oplus/sun_perf.config
         sed -i '$a CONFIG_KSU_SUSFS=y' $GITHUB_WORKSPACE/kernel_workspace/sm8750/arch/arm64/configs/vendor/oplus/sun_perf.config
 
-    - name: Setup official KernelSU-Next
+    - name: Setup KernelSU-Next (with native SUSFS)
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/sm8750
-        curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s main
+        curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev-susfs/kernel/setup.sh" | bash -s dev-susfs
         KSU_VERSION=$(cd KernelSU-Next && expr $(/usr/bin/git rev-list --count HEAD) + 20000)
         echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
 
-    - name: Setup susfs4ksu
+    - name: Setup susfs4ksu (kernel side only)
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/sm8750
         echo "Cloning susfs4ksu..."
         git clone --depth=1 -b gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git
         echo "Copying patch files..."
-        cp susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch KernelSU-Next/
         cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch 50_add_susfs_in_kernel.patch
         echo "Copying SUSFS source files..."
         cp susfs4ksu/kernel_patches/fs/* fs/
         cp susfs4ksu/kernel_patches/include/linux/* include/linux/
-        echo "Applying KernelSU patch..."
-        cd KernelSU-Next
-        patch -p1 < 10_enable_susfs_for_ksu.patch || true
         echo "Applying kernel patch..."
-        cd ..
         patch -p1 < 50_add_susfs_in_kernel.patch || true
 
     - name: Build kernel
